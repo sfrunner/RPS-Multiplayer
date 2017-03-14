@@ -16,7 +16,7 @@ $(document).ready(function(){
 	amOnline.on('value', function(snapshot) {
  		if (snapshot.val()) {
     		userRef.onDisconnect().remove();
-    		userRef.set(true);
+    		userRef.push(true);
     		console.log(snapshot.val());
   		}
 	});  	
