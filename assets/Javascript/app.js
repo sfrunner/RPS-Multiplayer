@@ -9,10 +9,17 @@ $(document).ready(function(){
   	};
   	firebase.initializeApp(config);
   	var db = firebase.database();
-  	db.ref(".info/connected").on("value",function(snapshot){
-  		console.log(snapshot.val());
-  	});
   	
+  	//How Many Users
+  	var userRef = db.ref("/presence/");
+  	var amOnline = db.ref("/.info/connected/");
+	amOnline.on('value', function(snapshot) {
+ 		if (snapshot.val()) {
+    		userRef.onDisconnect().remove();
+    		userRef.set(true);
+    		console.log(snapshot.val());
+  		}
+	});  	
   	db.ref().set({
   		name: "Steven"
   	});
