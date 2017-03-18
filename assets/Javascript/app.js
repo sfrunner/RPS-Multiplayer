@@ -23,6 +23,13 @@ $(document).ready(function(){
   	};
   	firebase.initializeApp(config);
   	var db = firebase.database();
+  	
+  	db.ref("/presence/").on("value", function(snapshot){
+				console.log("num" + snapshot.numChildren());
+				if(snapshot.numChildren() == 0){
+					db.ref("/chat/").remove();
+				}
+			});
   	var userName = prompt("Please Type in Full Name");
   	db.ref().on("value",function(results){
     		$.each(results.val().userRecords, function(i,val){  			
@@ -65,6 +72,7 @@ $(document).ready(function(){
   	
   	
   	//How Many Users & Limit to 2 at a time to return for playing
+  	
   	var userRef = db.ref("/presence/" + userName);
   	var amOnline = db.ref("/.info/connected/");
   	var gamePlay = db.ref("/game/" + userName);
@@ -83,18 +91,23 @@ $(document).ready(function(){
        			usersToPlay = snap.val();
       			$.each(usersToPlay, function(a,val){
       				//console.log(val.userID);
-      				if(userName === val.userID){
-      					userCanPlay = "true";
+      				if(userCount == 1){
+      					$("#gamestatus-text").html("Waiting for one more player");	
+      					$("#buttons-div, #result-display").hide();
+      					userCanPlay = "false";
       				}
+      				if(userName === val.userID && userCount > 1){
+      					userCanPlay = "true";
+      				} 
       			});
       			if(userCanPlay === "true"){
       				console.log("You're In");
       				$("#gamestatus-text").html("You are now playing");
-      				$("#buttons, #result-display").show();
+      				$("#buttons-div, #result-display").show();
       				
       			}
-      			else if(userCanPlay !== "true"){
-      				$("#buttons, #result-display").hide();
+      			else if(userCanPlay !== "true" && userCount > 1){
+      				$("#buttons-div, #result-display").hide();
       				//console.log("You're Out");
       				$("#gamestatus-text").html("You are on standby");
 
@@ -102,25 +115,25 @@ $(document).ready(function(){
       		});
       	}
       });
-      $("#buttons").on("click", function(event){
-				//console.log(event);
+      $(".buttons").on("click", function(event){
+		event.preventDefault();
+		$("#userChoice").html("You chose " + event.target.innerHTML.toLowerCase());
+		$("#currentStatus").html("Waiting on other player...");
       	db.ref("/game/" + userName).set({
       		userID: userName,
       		userChoice: event.target.innerHTML,
       	});
       	db.ref("/game/").on("value",function(choices){
       		if(choices.numChildren() === 2){
+      			$("#currentStatus").html("");
       			//console.log(choices.val());
       			$.each(choices.val(), function(b,val){
       				//console.log(val);
       				versusArray.push(val);
       				console.log(versusArray);
       				console.log(val.userID);
-      				if(val.userID === userName){
-      					$("#userChoice").html("You chose " + val.userChoice);
-      				}
-      				else if(val.userID !== userName){
-      					$("#opponentChoice").html(val.userID + " chose " + val.userChoice);
+      				if(val.userID !== userName){
+      					$("#opponentChoice").html(val.userID + " chose " + val.userChoice.toLowerCase());
       				}
       			});
       			
@@ -160,8 +173,7 @@ $(document).ready(function(){
 					tie = "true";
 								
 				}
-			
-      			db.ref("/game/").remove();				
+				db.ref("/game/").remove();		
 				console.log(winner);
       			console.log(loser);
       			console.log(tie);
@@ -176,6 +188,7 @@ $(document).ready(function(){
 						Losses: numberLosses,
 						Ties: numberTies,
 					});
+					console.log("win");
 				}
 				else if(loser === userName){
 					$("#result").html("You Lose!");
@@ -186,6 +199,7 @@ $(document).ready(function(){
 						Losses: numberLosses,
 						Ties: numberTies,
 					});	
+					console.log("lose");
 				}
 				else if(tie === "true"){
 					$("#result").html("You tied!");
@@ -196,29 +210,27 @@ $(document).ready(function(){
 						Losses: numberLosses,
 						Ties: numberTies,
 					});	
+					console.log("tie");
 				}
 				
 				
 				//Reset Winner, Loser, Tie, and versusArray Variables
-				winner = "";
-				loser = "";
-				tie = "";	
-				versusArray = [];				
-      				     	
+				setTimeout(function(){
+					$("#userChoice, #result, #opponentChoice").html("");
+					winner = "";
+					loser = "";
+					tie = "";	
+					versusArray = []
+				},3000);    	
   			}
   			else{
   				versusArray = [];
-  			}
-		
-
-		console.log("hello");
-		//Chat Functionality
-		 						
+  			}		 						
       	});
     });
-    $("#submit-btn").on("click",function(){
+    $("#submit-btn").click(function(){
 			message = $("#message-box").val().trim();
-			console.log(message);
+			$("#message-box").val("");
 			db.ref("/chat/").push({
 				userID: userName,
 				text: message,
@@ -226,12 +238,14 @@ $(document).ready(function(){
 			});
 	});
 			db.ref("/chat/").orderByChild("timeStamp").limitToLast(10).on("child_added",function(chat){
-					console.log(chat.val().text);
+					console.log(chat.val());
+					console.log(chat.val().message);
 					var newSection = $("<section>");
 					newSection.attr("class", "messages");
 					newSection.html("<strong>" + chat.val().userID + ":</strong> " + chat.val().text);
 					$("#chat").append(newSection);
 			});
+			
 
 		
 });
