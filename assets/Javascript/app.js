@@ -142,35 +142,41 @@ $(document).ready(function(){
       			if(versusArray[0].userChoice.toLowerCase() === "rock" && versusArray[1].userChoice.toLowerCase() === "scissors"){
 					winner = versusArray[0].userID;
 					loser = versusArray[1].userID;
+					versusArray = [];
 					
 				}
 				else if(versusArray[0].userChoice.toLowerCase() === "paper" && versusArray[1].userChoice.toLowerCase() === "rock"){
 					winner = versusArray[0].userID;
 					loser = versusArray[1].userID;
-					
+					versusArray = [];
 				}
 				else if(versusArray[0].userChoice.toLowerCase() === "scissors" && versusArray[1].userChoice.toLowerCase() === "paper"){
 					winner = versusArray[0].userID;
 					loser = versusArray[1].userID;
+					versusArray = [];
 					
 				}
 				if(versusArray[1].userChoice.toLowerCase() === "rock" && versusArray[0].userChoice.toLowerCase() === "scissors"){
 					winner = versusArray[1].userID;
 					loser = versusArray[0].userID;
+					versusArray = [];
 					
 				}
 				else if(versusArray[1].userChoice.toLowerCase() === "paper" && versusArray[0].userChoice.toLowerCase() === "rock"){
 					winner = versusArray[1].userID;
 					loser = versusArray[0].userID;
+					versusArray = [];
 					
 				}
 				else if(versusArray[1].userChoice.toLowerCase() === "scissors" && versusArray[0].userChoice.toLowerCase() === "paper"){
 					winner = versusArray[1].userID;
 					loser = versusArray[0].userID;
+					versusArray = [];
 					
 				}
 				else if(versusArray[1].userChoice.toLowerCase() === versusArray[0].userChoice.toLowerCase()){
 					tie = "true";
+					versusArray = [];
 								
 				}
 				db.ref("/game/").remove();		
