@@ -11,6 +11,7 @@ $(document).ready(function(){
 	var numberWins;
 	var numberLosses;
 	var numberTies;
+	var message;
 	
 	// Initialize Firebase
   	var config = {
@@ -67,6 +68,7 @@ $(document).ready(function(){
   	var userRef = db.ref("/presence/" + userName);
   	var amOnline = db.ref("/.info/connected/");
   	var gamePlay = db.ref("/game/" + userName);
+  	var chat = db.ref("/chat/");
 	amOnline.on('value', function(snapshot) {
  		if(snapshot.val()){
  			userRef.onDisconnect().remove();
@@ -77,7 +79,8 @@ $(document).ready(function(){
       		});
     		db.ref("/presence/").orderByChild("timeStamp").limitToFirst(2).on("value", function(snap){
     			userCount = snap.numChildren();
-    			usersToPlay = snap.val();
+    			console.log(userCount);
+       			usersToPlay = snap.val();
       			$.each(usersToPlay, function(a,val){
       				//console.log(val.userID);
       				if(userName === val.userID){
@@ -87,9 +90,11 @@ $(document).ready(function(){
       			if(userCanPlay === "true"){
       				console.log("You're In");
       				$("#gamestatus-text").html("You are now playing");
+      				$("#buttons, #result-display").show();
       				
       			}
       			else if(userCanPlay !== "true"){
+      				$("#buttons, #result-display").hide();
       				//console.log("You're Out");
       				$("#gamestatus-text").html("You are on standby");
 
@@ -110,6 +115,13 @@ $(document).ready(function(){
       				//console.log(val);
       				versusArray.push(val);
       				console.log(versusArray);
+      				console.log(val.userID);
+      				if(val.userID === userName){
+      					$("#userChoice").html("You chose " + val.userChoice);
+      				}
+      				else if(val.userID !== userName){
+      					$("#opponentChoice").html(val.userID + " chose " + val.userChoice);
+      				}
       			});
       			
       			
@@ -197,7 +209,29 @@ $(document).ready(function(){
   			else{
   				versusArray = [];
   			}
-				 						
+		
+
+		console.log("hello");
+		//Chat Functionality
+		 						
       	});
     });
+    $("#submit-btn").on("click",function(){
+			message = $("#message-box").val().trim();
+			console.log(message);
+			db.ref("/chat/").push({
+				userID: userName,
+				text: message,
+				timeStamp: firebase.database.ServerValue.TIMESTAMP
+			});
+	});
+			db.ref("/chat/").orderByChild("timeStamp").limitToLast(10).on("child_added",function(chat){
+					console.log(chat.val().text);
+					var newSection = $("<section>");
+					newSection.attr("class", "messages");
+					newSection.html("<strong>" + chat.val().userID + ":</strong> " + chat.val().text);
+					$("#chat").append(newSection);
+			});
+
+		
 });
