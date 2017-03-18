@@ -27,25 +27,34 @@ $(document).ready(function(){
     		$.each(results.val().userRecords, function(i,val){  			
   			if(i === userName){
   				numberWins = val.Wins;
-  				vnumberLosses = val.Losses;
+  				numberLosses = val.Losses;
 				numberTies = val.Ties;
+				console.log(val.Losses);
 			}
 			});
-			if(results.val().userRecords !== null){
-				console.log("null");
-			
-			if(results.val().userRecords.hasOwnProperty(userName) === false){
-					console.log("Does not exist");
-					db.ref("/userRecords/" + userName).set({
+			if(results.val().userRecords == null){
+				console.log("Does not exist");
+				db.ref("/userRecords/" + userName).set({
 					userID: userName,
 					Wins: 0,
 					Losses: 0,
 					Ties: 0,
+				});
+				numberWins = 0;
+				numberLosses = 0;
+				numberTies = 0;
+			}
+			else if(results.val().userRecords.hasOwnProperty(userName) === false){
+					console.log(results.val().userRecords.hasOwnProperty(userName));
+					db.ref("/userRecords/" + userName).set({
+						userID: userName,
+						Wins: 0,
+						Losses: 0,
+						Ties: 0,
 					});
 					numberWins = 0;
 					numberLosses = 0;
 					numberTies = 0;
-			}
 			}
   		$("#wins").html(numberWins);
 		$("#losses").html(numberLosses);
