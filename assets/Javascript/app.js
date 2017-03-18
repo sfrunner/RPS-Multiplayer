@@ -75,12 +75,12 @@ $(document).ready(function(){
   	
   	var userRef = db.ref("/presence/" + userName);
   	var amOnline = db.ref("/.info/connected/");
-  	var gamePlay = db.ref("/game/" + userName);
+  	//var gamePlay = db.ref("/game/" + userName);
   	var chat = db.ref("/chat/");
 	amOnline.on('value', function(snapshot) {
  		if(snapshot.val()){
  			userRef.onDisconnect().remove();
- 			gamePlay.onDisconnect().remove();
+ 			//gamePlay.onDisconnect().remove();
  			userRef.set({
     			userID: userName,
     			timeStamp: firebase.database.ServerValue.TIMESTAMP
@@ -188,6 +188,10 @@ $(document).ready(function(){
 						Losses: numberLosses,
 						Ties: numberTies,
 					});
+					winner = "";
+					loser = "";
+					tie = "";	
+					versusArray = [];
 					console.log("win");
 				}
 				else if(loser === userName){
@@ -199,6 +203,10 @@ $(document).ready(function(){
 						Losses: numberLosses,
 						Ties: numberTies,
 					});	
+					winner = "";
+					loser = "";
+					tie = "";	
+					versusArray = [];
 					console.log("lose");
 				}
 				else if(tie === "true"){
@@ -210,6 +218,10 @@ $(document).ready(function(){
 						Losses: numberLosses,
 						Ties: numberTies,
 					});	
+					winner = "";
+					loser = "";
+					tie = "";	
+					versusArray = [];
 					console.log("tie");
 				}
 				
@@ -217,10 +229,7 @@ $(document).ready(function(){
 				//Reset Winner, Loser, Tie, and versusArray Variables
 				setTimeout(function(){
 					$("#userChoice, #result, #opponentChoice").html("");
-					winner = "";
-					loser = "";
-					tie = "";	
-					versusArray = []
+					
 				},3000);    	
   			}
   			else{
