@@ -1,5 +1,7 @@
 $(document).ready(function(){
 	$("#buttons-div").hide();
+
+	//Global Variables
 	var userCount;
 	var gameStatus;
 	var usersToPlay;
@@ -24,45 +26,38 @@ $(document).ready(function(){
   	};
   	firebase.initializeApp(config);
   	var db = firebase.database();
-  	
   	db.ref("/presence/").on("value", function(snapshot){
-				console.log("num" + snapshot.numChildren());
-				if(snapshot.numChildren() == 0){
-					db.ref("/chat/").remove();
-				}
-			});
+		if(snapshot.numChildren() == 0){
+			db.ref("/chat/").remove();
+		}
+	});
+
+	//User Prompt and Null Check for UserRecords to add User
   	var userName = prompt("Please Type in Full Name");
   	db.ref().on("value",function(results){
-    		$.each(results.val().userRecords, function(i,val){  			
+    	$.each(results.val().userRecords, function(i,val){  			
   			if(i === userName){
   				numberWins = val.Wins;
   				numberLosses = val.Losses;
 				numberTies = val.Ties;
-				console.log(val.Losses);
 			}
+		});
+		if(results.val().userRecords == null){
+			db.ref("/userRecords/" + userName).set({
+				userID: userName,
+				Wins: 0,
+				Losses: 0,
+				Ties: 0,
 			});
-			if(results.val().userRecords == null){
-				console.log("Does not exist");
-				db.ref("/userRecords/" + userName).set({
-					userID: userName,
-					Wins: 0,
-					Losses: 0,
-					Ties: 0,
-				});
-				//numberWins = 0;
-				//numberLosses = 0;
-				//numberTies = 0;
-			}
-			else if(results.val().userRecords.hasOwnProperty(userName) === false){
-					console.log(results.val().userRecords.hasOwnProperty(userName));
-					db.ref("/userRecords/" + userName).set({
-						userID: userName,
-						Wins: 0,
-						Losses: 0,
-						Ties: 0,
-					});
-					
-			}
+		}
+		else if(results.val().userRecords.hasOwnProperty(userName) === false){
+			db.ref("/userRecords/" + userName).set({
+				userID: userName,
+				Wins: 0,
+				Losses: 0,
+				Ties: 0,
+			});
+		}
 		$("#username").html("Your User Name is " + userName);	
   		$("#wins").html("Wins: " + numberWins);
 		$("#losses").html("Losses: " + numberLosses);
@@ -78,17 +73,14 @@ $(document).ready(function(){
 	amOnline.on('value', function(snapshot) {
  		if(snapshot.val()){
  			userRef.onDisconnect().remove();
- 			//gamePlay.onDisconnect().remove();
  			userRef.set({
     			userID: userName,
     			timeStamp: firebase.database.ServerValue.TIMESTAMP
       		});
     		db.ref("/presence/").orderByChild("timeStamp").limitToFirst(2).on("value", function(snap){
     			userCount = snap.numChildren();
-    			console.log(userCount);
        			usersToPlay = snap.val();
       			$.each(usersToPlay, function(a,val){
-      				//console.log(val.userID);
       				if(userCount == 1){
       					$("#gamestatus-text").html("Your Current Status: Game Is Waiting For One More Player");	
       					$("#buttons-div, #result-display").hide();
@@ -99,51 +91,43 @@ $(document).ready(function(){
       				} 
       			});
       			if(userCanPlay === "true"){
-      				console.log("You're In");
       				$("#gamestatus-text").html("Your Current Status: In Session");
       				$("#buttons-div, #result-display").show();
-      				
       			}
       			else if(userCanPlay !== "true" && userCount > 1){
       				$("#buttons-div, #result-display").hide();
-      				//console.log("You're Out");
       				$("#gamestatus-text").html("Your Current Status: Your Are On Standby");
-
       			}
       		});
       	}
-      });
-      $(".buttons").on("click", function(event){
-			event.preventDefault();
-			$("#userChoice").html("You chose " + event.target.innerHTML.toLowerCase());
-			$("#currentStatus").html("Waiting on other player...");
-      		db.ref("/game/" + userName).set({
-      			userID: userName,
-      			userChoice: event.target.innerHTML,
-      		});
+     });
+
+	//On-Click Function for Buttons and to send choices to Firebase	
+     $(".buttons").on("click", function(event){
+		event.preventDefault();
+		$("#userChoice").html("You chose " + event.target.innerHTML.toLowerCase());
+		$("#currentStatus").html("Waiting on other player...");
+      	db.ref("/game/" + userName).set({
+      		userID: userName,
+      		userChoice: event.target.innerHTML,
+      	});
       	
+      	//Listener for Changes to Game Directory in Firebase
       	db.ref("/game/").on("value",function(choices){
       		if(choices.numChildren() === 2){
       			$("#currentStatus").html("");
-      			//console.log(choices.val());
-      			debugger
       			$.each(choices.val(), function(b,val){
-      				console.log(val);
       				versusArray.push(val);
-      				console.log(versusArray);
-      				console.log(val.userID);
       				if(val.userID !== userName){
       					$("#opponentChoice").html(val.userID + " chose " + val.userChoice.toLowerCase());
       				}
       			});
       			
-      			
-      			//Game Criteria
+      			//Game Criteria for Result
       			if(versusArray[0].userChoice.toLowerCase() === "rock" && versusArray[1].userChoice.toLowerCase() === "scissors"){
 					winner = versusArray[0].userID;
 					loser = versusArray[1].userID;
 					versusArray = [];
-					
 				}
 				else if(versusArray[0].userChoice.toLowerCase() === "paper" && versusArray[1].userChoice.toLowerCase() === "rock"){
 					winner = versusArray[0].userID;
@@ -154,37 +138,29 @@ $(document).ready(function(){
 					winner = versusArray[0].userID;
 					loser = versusArray[1].userID;
 					versusArray = [];
-					
 				}
 				else if(versusArray[1].userChoice.toLowerCase() === "rock" && versusArray[0].userChoice.toLowerCase() === "scissors"){
 					winner = versusArray[1].userID;
 					loser = versusArray[0].userID;
 					versusArray = [];
-					
 				}
 				else if(versusArray[1].userChoice.toLowerCase() === "paper" && versusArray[0].userChoice.toLowerCase() === "rock"){
 					winner = versusArray[1].userID;
 					loser = versusArray[0].userID;
 					versusArray = [];
-					
 				}
 				else if(versusArray[1].userChoice.toLowerCase() === "scissors" && versusArray[0].userChoice.toLowerCase() === "paper"){
 					winner = versusArray[1].userID;
 					loser = versusArray[0].userID;
 					versusArray = [];
-					
 				}
 				else if(versusArray[1].userChoice.toLowerCase() === versusArray[0].userChoice.toLowerCase()){
 					tie = "true";
-					versusArray = [];
-								
+					versusArray = [];		
 				}
 				db.ref("/game/").remove();		
-				console.log(winner);
-      			console.log(loser);
-      			console.log(tie);
-      			
-				//winner/loser display
+				
+				//winner-loser display and update of records in UserRecords Firebase Directory
 				if(winner === userName){
 					$("#result").html("You Win!");
 					numberWins++;
@@ -198,7 +174,6 @@ $(document).ready(function(){
 					loser = "";
 					tie = "";	
 					versusArray = [];
-					console.log("win");
 				}
 				else if(loser === userName){
 					$("#result").html("You Lose!");
@@ -213,7 +188,6 @@ $(document).ready(function(){
 					loser = "";
 					tie = "";	
 					versusArray = [];
-					console.log("lose");
 				}
 				else if(tie === "true"){
 					$("#result").html("You tied!");
@@ -228,14 +202,12 @@ $(document).ready(function(){
 					loser = "";
 					tie = "";	
 					versusArray = [];
-					console.log("tie");
 				}
 				
 				
 				//Reset Winner, Loser, Tie, and versusArray Variables
 				setTimeout(function(){
 					$("#userChoice, #result, #opponentChoice").html("");
-					
 				},3000);    	
   			}
 			else if(choices.numChildren() > 2){
@@ -244,26 +216,23 @@ $(document).ready(function(){
   			else{
   				versusArray = [];
   			}		 						
-      });
-   });
-    $("#submit-btn").click(function(){
-			message = $("#message-box").val().trim();
-			$("#message-box").val("");
-			db.ref("/chat/").push({
-				userID: userName,
-				text: message,
-				timeStamp: firebase.database.ServerValue.TIMESTAMP
-			});
-	});
-			db.ref("/chat/").orderByChild("timeStamp").limitToLast(10).on("child_added",function(chat){
-					console.log(chat.val());
-					console.log(chat.val().message);
-					var newSection = $("<section>");
-					newSection.attr("class", "messages");
-					newSection.html("<strong>" + chat.val().userID + ":</strong> " + chat.val().text);
-					$("#chat").append(newSection);
-			});
-			
+      	});
+   	});
 
-		
+     //Chat Functional (Submit On-Click Listener and Set/Receive Messages from Firebase (Limit = 10))
+    $("#submit-btn").click(function(){
+		message = $("#message-box").val().trim();
+		$("#message-box").val("");
+		db.ref("/chat/").push({
+			userID: userName,
+			text: message,
+			timeStamp: firebase.database.ServerValue.TIMESTAMP
+		});
+	});
+	db.ref("/chat/").orderByChild("timeStamp").limitToLast(10).on("child_added",function(chat){
+		var newSection = $("<section>");
+		newSection.attr("class", "messages");
+		newSection.html("<strong>" + chat.val().userID + ":</strong> " + chat.val().text);
+		$("#chat").append(newSection);
+	});
 });
