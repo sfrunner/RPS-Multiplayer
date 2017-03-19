@@ -9,9 +9,9 @@ $(document).ready(function(){
 	var winner;
 	var loser;
 	var tie;
-	var numberWins;
-	var numberLosses;
-	var numberTies;
+	var numberWins = 0;
+	var numberLosses = 0;
+	var numberTies = 0;
 	var message;
 	
 	// Initialize Firebase
@@ -49,9 +49,9 @@ $(document).ready(function(){
 					Losses: 0,
 					Ties: 0,
 				});
-				numberWins = 0;
-				numberLosses = 0;
-				numberTies = 0;
+				//numberWins = 0;
+				//numberLosses = 0;
+				//numberTies = 0;
 			}
 			else if(results.val().userRecords.hasOwnProperty(userName) === false){
 					console.log(results.val().userRecords.hasOwnProperty(userName));
@@ -61,9 +61,7 @@ $(document).ready(function(){
 						Losses: 0,
 						Ties: 0,
 					});
-					numberWins = 0;
-					numberLosses = 0;
-					numberTies = 0;
+					
 			}
 		$("#username").html("Your User Name is " + userName);	
   		$("#wins").html("Wins: " + numberWins);
