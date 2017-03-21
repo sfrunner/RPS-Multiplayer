@@ -1,4 +1,20 @@
-﻿#chat{
-	overflow:auto;
-	height:200px;
+﻿h1{
+	text-align: center;
 }
+
+h3{
+	text-align: center;
+}
+
+#result-display{
+	text-align:center;
+}
+
+#chat{
+	height:300px;
+	width:100%;
+	overflow: auto;
+}
+
+
+
